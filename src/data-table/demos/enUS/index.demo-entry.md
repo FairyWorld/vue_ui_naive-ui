@@ -228,44 +228,25 @@ These methods can help you control table in an uncontrolled manner. However, it'
 | scrollTo | `DataTableScrollTo` | Scroll content. See <n-a href="#DataTableScrollTo-Type">DataTableScrollTo Type</n-a>. | NEXT_VERSION |
 | sort | `(columnKey: string \| number, order: 'ascend' \| 'descend' \| false) => void` | Set the sort state of the table. |  |
 
-#### DataTableScrollTo Type
-
-```ts
-interface DataTableScrollTo {
-  (x: number, y: number): void
-  (options: {
-    left?: number
-    top?: number
-    behavior?: ScrollBehavior
-    debounce?: boolean
-  }): void
-  (options: {
-    el: HTMLElement
-    behavior?: ScrollBehavior
-    debounce?: boolean
-  }): void
-  (options: {
-    index: number
-    elSize?: number
-    behavior?: ScrollBehavior
-    debounce?: boolean
-  }): void
-  (options: {
-    key: string | number
-    behavior?: ScrollBehavior
-    debounce?: boolean
-  }): void
-  (options: {
-    position: 'top' | 'bottom'
-    behavior?: ScrollBehavior
-    debounce?: boolean
-  }): void
-}
-```
-
 ### DataTable Slots
 
 | Name    | Type | Description                                       | Version |
 | ------- | ---- | ------------------------------------------------- | ------- |
 | empty   | `()` | Custom description when data of table is empty.   |         |
 | loading | `()` | Custom description when data of table is loading. | 2.34.0  |
+
+#### DataTableScrollTo Type
+
+`scrollTo` delegates to virtual list when `virtual-scroll` is enabled, otherwise to the internal scrollbar. Available signatures by mode:
+
+| Signature | Virtual scroll | Non-virtual scroll |
+| --- | --- | --- |
+| `(x: number, y: number)` | Yes | Yes |
+| `{ left?, top?, behavior?, debounce? }` | Yes | Yes |
+| `{ position: 'top' \| 'bottom', behavior?, debounce? }` | Yes | Yes |
+| `{ index, behavior?, debounce? }` | Yes | No |
+| `{ key, behavior?, debounce? }` | Yes | No |
+| `{ el, behavior?, debounce? }` | No | Yes |
+| `{ index, elSize, behavior?, debounce? }` | No | Yes |
+
+When `virtual-scroll` is enabled, `scrollTo` still has some edge cases that are not fully handled. For example, using `behavior: 'smooth'` may have some issues; please refer to actual usage.

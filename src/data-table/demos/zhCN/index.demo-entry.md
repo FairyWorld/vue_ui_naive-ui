@@ -238,42 +238,7 @@ type DataTableCreateSummary = (pageData: RowData[]) =>
 | filters | `(filters: DataTableFilterState \| null) => void` | 设定表格当前的过滤器 |  |
 | page | `(page: number) => void` | 手动设置 page |  |
 | scrollTo | `DataTableScrollTo` | 滚动内容，类型见 <n-a href="#DataTableScrollTo-Type">DataTableScrollTo Type</n-a> | NEXT_VERSION |
-| sort | `(columnKey: string \| number \| null, order: 'ascend' \| 'descend' \| false) => void` | 设定表格的过滤状态 |  |
-
-#### DataTableScrollTo Type
-
-```ts
-interface DataTableScrollTo {
-  (x: number, y: number): void
-  (options: {
-    left?: number
-    top?: number
-    behavior?: ScrollBehavior
-    debounce?: boolean
-  }): void
-  (options: {
-    el: HTMLElement
-    behavior?: ScrollBehavior
-    debounce?: boolean
-  }): void
-  (options: {
-    index: number
-    elSize?: number
-    behavior?: ScrollBehavior
-    debounce?: boolean
-  }): void
-  (options: {
-    key: string | number
-    behavior?: ScrollBehavior
-    debounce?: boolean
-  }): void
-  (options: {
-    position: 'top' | 'bottom'
-    behavior?: ScrollBehavior
-    debounce?: boolean
-  }): void
-}
-```
+| sort | `(columnKey: string \| number \| null, order: 'ascend' \| 'descend' \| false) => void` | 设定表格的排序状态 |  |
 
 ### DataTable Slots
 
@@ -281,3 +246,19 @@ interface DataTableScrollTo {
 | ------- | ---- | --------------------- | ------ |
 | empty   | `()` | 表格数据为空时的展示  |        |
 | loading | `()` | 表格 loading 时的展示 | 2.34.0 |
+
+#### DataTableScrollTo Type
+
+`scrollTo` 在开启 `virtual-scroll` 时会转发到虚拟列表，否则转发到内部滚动条。不同模式下可用的签名如下：
+
+| 签名 | 虚拟滚动 | 非虚拟滚动 |
+| --- | --- | --- |
+| `(x: number, y: number)` | 是 | 是 |
+| `{ left?, top?, behavior?, debounce? }` | 是 | 是 |
+| `{ position: 'top' \| 'bottom', behavior?, debounce? }` | 是 | 是 |
+| `{ index, behavior?, debounce? }` | 是 | 否 |
+| `{ key, behavior?, debounce? }` | 是 | 否 |
+| `{ el, behavior?, debounce? }` | 否 | 是 |
+| `{ index, elSize, behavior?, debounce? }` | 否 | 是 |
+
+开启 `virtual-scroll` 时，`scrollTo` 仍存在一些尚未完全处理好的边界情况。例如使用 `behavior: 'smooth'` 时，滚动效果可能存在一些问题，效果以实际情况为准。
