@@ -125,6 +125,7 @@ export default defineComponent({
       mergedCurrentPageRef,
       paginatedDataRef,
       rawPaginatedDataRef,
+      rawSortedDataRef,
       selectionColumnRef,
       hoverKeyRef,
       mergedPaginationRef,
@@ -331,11 +332,11 @@ export default defineComponent({
       scrollTo: (arg0: any, arg1?: any) => {
         mainTableInstRef.value?.scrollTo(arg0, arg1)
       },
-      getFilteredData: () => {
-        return rawPaginatedDataRef.value
+      getFilteredAndSortedData: () => {
+        return rawSortedDataRef.value
       },
       getCurrentPageData: () => {
-        return paginatedDataRef.value.map(t => t.rawNode)
+        return rawPaginatedDataRef.value
       }
     }
     const cssVarsRef = computed(() => {
