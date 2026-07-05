@@ -237,8 +237,43 @@ type DataTableCreateSummary = (pageData: RowData[]) =>
 | getFilteredAndSortedData | `() => RowData[]` | 获取 filter 和 sorter 应用后的全部行数据，不含 pagination；`remote` 模式下仅基于当前 `data` 属性 | NEXT_VERSION |
 | filters | `(filters: DataTableFilterState \| null) => void` | 设定表格当前的过滤器 |  |
 | page | `(page: number) => void` | 手动设置 page |  |
-| scrollTo | `(options: { left?: number, top?: number, behavior?: ScrollBehavior }): void & (x: number, y: number) => void` | 滚动内容 | 2.30.4 |
+| scrollTo | `DataTableScrollTo` | 滚动内容，类型见 <n-a href="#DataTableScrollTo-Type">DataTableScrollTo Type</n-a> | NEXT_VERSION |
 | sort | `(columnKey: string \| number \| null, order: 'ascend' \| 'descend' \| false) => void` | 设定表格的过滤状态 |  |
+
+#### DataTableScrollTo Type
+
+```ts
+interface DataTableScrollTo {
+  (x: number, y: number): void
+  (options: {
+    left?: number
+    top?: number
+    behavior?: ScrollBehavior
+    debounce?: boolean
+  }): void
+  (options: {
+    el: HTMLElement
+    behavior?: ScrollBehavior
+    debounce?: boolean
+  }): void
+  (options: {
+    index: number
+    elSize?: number
+    behavior?: ScrollBehavior
+    debounce?: boolean
+  }): void
+  (options: {
+    key: string | number
+    behavior?: ScrollBehavior
+    debounce?: boolean
+  }): void
+  (options: {
+    position: 'top' | 'bottom'
+    behavior?: ScrollBehavior
+    debounce?: boolean
+  }): void
+}
+```
 
 ### DataTable Slots
 

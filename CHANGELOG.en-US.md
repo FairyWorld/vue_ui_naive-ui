@@ -18,6 +18,7 @@
 
 - Fix `n-modal` mask inside scrollbar causing `Blocked aria-hidden on an element because its descendant retained focus` warning, closes [#7556](https://github.com/tusen-ai/naive-ui/issues/7556).
 - Fix `n-color-picker` passed `style` and `click` (onClick) not applied to trigger, closes [#7528](https://github.com/tusen-ai/naive-ui/issues/7528).
+- Fix `n-data-table`'s `scrollTo` method type missing, closes [#7554](https://github.com/tusen-ai/naive-ui/issues/7530).
 - Fix `n-data-table`'s empty state not vertically centered when height is set, closes [#7546](https://github.com/tusen-ai/naive-ui/issues/7546).
 - fix(spin): preserve size-based strokeWidth defaults in NSpin, closes [#8061](https://github.com/tusen-ai/naive-ui/issues/8061)
 - Fix `n-upload` file status loss in controlled mode when calling `onError` synchronously in `custom-request` for multiple files, closes [#7366](https://github.com/tusen-ai/naive-ui/issues/7366)
