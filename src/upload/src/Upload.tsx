@@ -482,9 +482,7 @@ export default defineComponent({
       }
     ) => {
       const { append, remove } = options
-      const fileListAfterChange = Array.from(
-        uncontrolledFileListRef.value.map(createSettledFileInfo)
-      )
+      const fileListAfterChange = Array.from(mergedFileListRef.value)
       const fileIndex = fileListAfterChange.findIndex(
         file => file.id === fileAfterChange.id
       )
@@ -511,6 +509,13 @@ export default defineComponent({
       else if (__DEV__) {
         warn('upload', 'File has no corresponding id in current file list.')
       }
+    }
+    let customRequestDoChangeChain = Promise.resolve()
+    const scheduleDoChange: DoChange = (file, event, options) => {
+      customRequestDoChangeChain = customRequestDoChangeChain.then(async () => {
+        await nextTick()
+        doChange(file, event, options)
+      })
     }
     function handleFileAddition(
       fileAndEntries: FileAndEntry[] | null,
@@ -610,7 +615,7 @@ export default defineComponent({
           if (props.customRequest) {
             customSubmitImpl({
               inst: {
-                doChange,
+                doChange: scheduleDoChange,
                 xhrMap,
                 onFinish: props.onFinish,
                 onError: props.onError
