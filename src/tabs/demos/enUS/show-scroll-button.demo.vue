@@ -32,7 +32,7 @@ const type = ref<TabsProps['type']>('card')
 
     <n-space>
       <n-switch v-model:value="showScrollButton" />
-      {{ showScrollButton ? '显示' : '隐藏' }}按钮
+      {{ showScrollButton ? 'Show' : 'Hide' }} button
     </n-space>
     <n-tabs
       :type="type"
