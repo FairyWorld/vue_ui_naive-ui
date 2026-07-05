@@ -16,6 +16,7 @@
 
 ### Fixes
 
+- 修复 `n-modal` 遮罩层位于 scrollbar 内部导致 `Blocked aria-hidden on an element because its descendant retained focus` 警告，关闭 [#7556](https://github.com/tusen-ai/naive-ui/issues/7556)
 - 修复 `n-color-picker` 传入的 style、click 事件不生效，关闭 [#7528](https://github.com/tusen-ai/naive-ui/issues/7528)
 - 修复 `n-data-table` 的 empty 状态在设定高度后没有垂直居中显示，关闭 [#7546](https://github.com/tusen-ai/naive-ui/issues/7546)
 - 修复 `n-spin` 未传入 `strokeWidth` 时无法按 `size` 使用内置线宽（被 Loading 的默认值覆盖）的问题，关闭 [#8061](https://github.com/tusen-ai/naive-ui/issues/8061)

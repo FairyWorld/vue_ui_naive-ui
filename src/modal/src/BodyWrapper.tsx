@@ -3,8 +3,7 @@ import type {
   DirectiveArguments,
   PropType,
   SlotsType,
-  VNode,
-  VNodeChild
+  VNode
 } from 'vue'
 import type { ScrollbarInst } from '../../_internal'
 import type { ModalDraggableOptions } from './interface'
@@ -75,7 +74,6 @@ export default defineComponent({
     },
     maskHidden: Boolean,
     ...presetProps,
-    renderMask: Function as PropType<() => VNodeChild>,
     // events
     onClickoutside: Function as PropType<(e: MouseEvent) => void>,
     onBeforeLeave: {
@@ -311,8 +309,7 @@ export default defineComponent({
               contentClass={`${mergedClsPrefix}-modal-scroll-content`}
             >
               {{
-                default: () => [
-                  this.renderMask?.(),
+                default: () => (
                   <VFocusTrap
                     disabled={!this.trapFocus || this.maskHidden}
                     active={this.show}
@@ -393,7 +390,7 @@ export default defineComponent({
                       )
                     }}
                   </VFocusTrap>
-                ]
+                )
               }}
             </NScrollbar>
           </div>,

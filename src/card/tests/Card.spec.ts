@@ -177,6 +177,22 @@ describe('n-card', () => {
     wrapper.unmount()
   })
 
+  it('should work with `content-scrollable` prop', async () => {
+    const wrapper = mount(NCard, {
+      props: {
+        contentScrollable: true
+      },
+      slots: {
+        default: () => 'scrollable content'
+      }
+    })
+
+    expect(wrapper.find('.n-card--content-scrollable').exists()).toBe(true)
+    expect(wrapper.find('.n-card__content-scrollbar').exists()).toBe(true)
+    expect(wrapper.find('.n-card-content').text()).toBe('scrollable content')
+    wrapper.unmount()
+  })
+
   it('should work with `header-extra-style` prop', async () => {
     const testStyle = 'padding: 0px;'
     const wrapper = mount(NCard, {

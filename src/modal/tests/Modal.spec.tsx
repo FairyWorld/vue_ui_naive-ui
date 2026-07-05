@@ -108,4 +108,21 @@ describe('n-modal', () => {
     expect(document.querySelector('.n-dialog')).not.toEqual(null)
     wrapper.unmount()
   })
+
+  it('should work with `content-scrollable` prop on card preset', async () => {
+    const wrapper = mountModal({
+      modalProps: {
+        preset: 'card',
+        contentScrollable: true
+      }
+    })
+    await wrapper.find('button').trigger('click')
+    expect(document.querySelector('.n-card--content-scrollable')).not.toEqual(
+      null
+    )
+    expect(document.querySelector('.n-card__content-scrollbar')).not.toEqual(
+      null
+    )
+    wrapper.unmount()
+  })
 })
