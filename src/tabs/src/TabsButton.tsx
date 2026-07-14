@@ -1,12 +1,13 @@
 import type { PropType } from 'vue'
+import type { ExtractThemeOverrides } from '../../_mixins/use-theme'
+import type { ButtonTheme } from '../../button/styles'
 import { defineComponent, h } from 'vue'
 import { NBaseIcon } from '../../_internal'
 import {
-  ArrowDownIcon,
   ChevronLeftIcon as ArrowLeftIcon,
-  ChevronRightIcon as ArrowRightIcon,
-  ArrowUpIcon
+  ChevronRightIcon as ArrowRightIcon
 } from '../../_internal/icons'
+import { NButton } from '../../button'
 
 type ButtonTypes = 'prev' | 'next'
 
@@ -21,78 +22,72 @@ export default defineComponent({
       type: String,
       required: true
     },
-    vertical: {
-      type: Boolean,
-      default: false
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    onClick: {
-      type: Function as PropType<(type: ButtonTypes, ev: Event) => void>
-    }
+    vertical: Boolean,
+    disabled: Boolean,
+    theme: Object as PropType<ButtonTheme>,
+    themeOverrides: Object as PropType<ExtractThemeOverrides<ButtonTheme>>,
+    onClick: Function as PropType<(type: ButtonTypes) => void>
   },
-  emits: ['click'],
-  setup(props, { emit }) {
-    const handleClick = (ev: Event) => {
+  setup(props) {
+    const handleClick = () => {
       if (!props.disabled) {
-        emit('click', props.type, ev)
-      }
-    }
-
-    const renderIcon = () => {
-      if (props.vertical) {
-        if (props.type === 'next') {
-          return <ArrowDownIcon />
-        }
-        return <ArrowUpIcon />
-      }
-      if (props.type === 'next') {
-        return <ArrowRightIcon />
-      }
-      else {
-        return <ArrowLeftIcon />
+        props.onClick?.(props.type)
       }
     }
 
     return {
-      renderIcon,
       handleClick
     }
   },
   render() {
     const {
       mergedClsPrefix,
-      renderIcon,
       disabled,
       type,
       vertical,
+      theme,
+      themeOverrides,
       handleClick
     } = this
 
     return (
-      <div
-        class={[
-          `${mergedClsPrefix}-tabs-nav-button`,
-          !vertical
-          && type === 'prev'
-          && `${mergedClsPrefix}-tabs-nav-button--left`,
-          !vertical
-          && type === 'next'
-          && `${mergedClsPrefix}-tabs-nav-button--right`,
-          vertical
-          && type === 'prev'
-          && `${mergedClsPrefix}-tabs-nav-button--up`,
-          vertical
-          && type === 'next'
-          && `${mergedClsPrefix}-tabs-nav-button--down`,
-          disabled && `${mergedClsPrefix}-tabs-nav-button--disabled`
-        ]}
+      <NButton
+        text
+        disabled={disabled}
+        size="small"
+        theme={theme}
+        themeOverrides={themeOverrides}
         onClick={handleClick}
+        class={[
+          `${mergedClsPrefix}-tabs-scroll-button`,
+          !vertical
+          && type === 'prev'
+          && `${mergedClsPrefix}-tabs-scroll-button--left`,
+          !vertical
+          && type === 'next'
+          && `${mergedClsPrefix}-tabs-scroll-button--right`,
+          vertical
+          && type === 'prev'
+          && `${mergedClsPrefix}-tabs-scroll-button--up`,
+          vertical
+          && type === 'next'
+          && `${mergedClsPrefix}-tabs-scroll-button--down`
+        ]}
       >
-        <NBaseIcon clsPrefix={mergedClsPrefix}>{renderIcon()}</NBaseIcon>
-      </div>
+        {{
+          icon: () => (
+            <NBaseIcon
+              clsPrefix={mergedClsPrefix}
+              style={vertical ? { transform: 'rotate(90deg)' } : undefined}
+            >
+              {{
+                default: () =>
+                  type === 'next' ? <ArrowRightIcon /> : <ArrowLeftIcon />
+              }}
+            </NBaseIcon>
+          )
+        }}
+      </NButton>
     )
   }
 })

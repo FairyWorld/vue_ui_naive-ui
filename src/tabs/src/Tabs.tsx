@@ -117,14 +117,8 @@ export const tabsProps = {
   onActiveNameChange: [Function, Array] as PropType<
     MaybeArray<(value: string & number) => void>
   >,
-  showScrollButton: {
-    type: Boolean,
-    default: false
-  },
-  centerActiveTab: {
-    type: Boolean,
-    default: false
-  }
+  showScrollButton: Boolean,
+  centerActiveTab: Boolean
 } as const
 
 export type TabsProps = ExtractPublicPropTypes<typeof tabsProps>
@@ -175,6 +169,7 @@ export default defineComponent({
     )
 
     const tabsElRef = ref<HTMLElement | null>(null)
+    const selfElRef = ref<HTMLElement | null>(null)
     const barElRef = ref<HTMLElement | null>(null)
     const scrollWrapperElRef = ref<HTMLElement | null>(null)
     const addTabInstRef = ref<ComponentPublicInstance | null>(null)
@@ -334,58 +329,38 @@ export default defineComponent({
       isHorizontal: boolean,
       centerActiveTab: boolean
     ) {
-      if (centerActiveTab) {
-        const containerSize = isHorizontal
-          ? scrollContainer.offsetWidth
-          : scrollContainer.offsetHeight
-        const elementSize = isHorizontal
-          ? targetElement.offsetWidth
-          : targetElement.offsetHeight
-        const elementOffset = isHorizontal
-          ? targetElement.offsetLeft
-          : targetElement.offsetTop
-        const centerOffset = (containerSize - elementSize) / 2
-        const targetScroll = elementOffset - centerOffset
+      const containerSize = isHorizontal
+        ? scrollContainer.offsetWidth
+        : scrollContainer.offsetHeight
+      const containerScroll = isHorizontal
+        ? scrollContainer.scrollLeft
+        : scrollContainer.scrollTop
+      const elementOffset = isHorizontal
+        ? targetElement.offsetLeft
+        : targetElement.offsetTop
+      const elementSize = isHorizontal
+        ? targetElement.offsetWidth
+        : targetElement.offsetHeight
 
+      let targetScroll: number | undefined
+      if (centerActiveTab) {
+        targetScroll = elementOffset - (containerSize - elementSize) / 2
+      }
+      else if (containerScroll > elementOffset) {
+        targetScroll = elementOffset
+      }
+      else if (
+        elementOffset + elementSize
+        > containerScroll + containerSize
+      ) {
+        targetScroll = elementOffset + elementSize - containerSize
+      }
+
+      if (targetScroll !== undefined) {
         scrollContainer.scrollTo({
-          top: isHorizontal ? 0 : targetScroll,
-          left: isHorizontal ? targetScroll : 0,
+          [isHorizontal ? 'left' : 'top']: targetScroll,
           behavior: 'smooth'
         })
-      }
-      else {
-        const containerScroll = isHorizontal
-          ? scrollContainer.scrollLeft
-          : scrollContainer.scrollTop
-        const containerSize = isHorizontal
-          ? scrollContainer.offsetWidth
-          : scrollContainer.offsetHeight
-        const elementOffset = isHorizontal
-          ? targetElement.offsetLeft
-          : targetElement.offsetTop
-        const elementSize = isHorizontal
-          ? targetElement.offsetWidth
-          : targetElement.offsetHeight
-
-        if (containerScroll > elementOffset) {
-          scrollContainer.scrollTo({
-            top: isHorizontal ? 0 : elementOffset,
-            left: isHorizontal ? elementOffset : 0,
-            behavior: 'smooth'
-          })
-        }
-        else if (
-          elementOffset + elementSize
-          > containerScroll + containerSize
-        ) {
-          scrollContainer.scrollTo({
-            top: isHorizontal ? 0 : elementOffset + elementSize - containerSize,
-            left: isHorizontal
-              ? elementOffset + elementSize - containerSize
-              : 0,
-            behavior: 'smooth'
-          })
-        }
       }
     }
 
@@ -650,6 +625,29 @@ export default defineComponent({
       })
     })
 
+    watch(
+      () => props.type,
+      () => {
+        void nextTick(() => {
+          const selfEl = selfElRef.value
+          if (!selfEl)
+            return
+          selfEl.classList.add('transition-disabled')
+          const { type } = props
+          if (type === 'line' || type === 'bar') {
+            updateBarPositionInstantly()
+          }
+          else if (type === 'segment') {
+            updateSegmentPosition({
+              transitionDisabled: true
+            })
+          }
+          void selfEl.offsetWidth
+          selfEl.classList.remove('transition-disabled')
+        })
+      }
+    )
+
     const addTabFixedRef = ref(false)
     function _handleTabsResize(entry: ResizeObserverEntry): void {
       const {
@@ -707,7 +705,7 @@ export default defineComponent({
         onAdd()
     }
 
-    const isScroll = ref(false)
+    const isOverflowRef = ref(false)
     function deriveScrollShadow(el: HTMLElement | null): void {
       if (!el)
         return
@@ -719,14 +717,16 @@ export default defineComponent({
         startReachedRef.value = scrollLeft <= SCROLL_POSITION_EPSILON
         endReachedRef.value
           = scrollLeft + offsetWidth >= scrollWidth - SCROLL_POSITION_EPSILON
-        isScroll.value = offsetWidth < scrollWidth - SCROLL_POSITION_EPSILON
+        isOverflowRef.value
+          = offsetWidth < scrollWidth - SCROLL_POSITION_EPSILON
       }
       else {
         const { scrollTop, scrollHeight, offsetHeight } = el
         startReachedRef.value = scrollTop <= SCROLL_POSITION_EPSILON
         endReachedRef.value
           = scrollTop + offsetHeight >= scrollHeight - SCROLL_POSITION_EPSILON
-        isScroll.value = offsetHeight < scrollHeight - SCROLL_POSITION_EPSILON
+        isOverflowRef.value
+          = offsetHeight < scrollHeight - SCROLL_POSITION_EPSILON
       }
     }
 
@@ -825,8 +825,6 @@ export default defineComponent({
           closeColorHover,
           closeColorPressed,
           closeBorderRadius,
-          iconColorDisabled,
-          navButtonHoverColor,
           [createKey('panePadding', size)]: panePadding,
           [createKey('tabPadding', sizeType)]: tabPadding,
           [createKey('tabPaddingVertical', sizeType)]: tabPaddingVertical,
@@ -872,9 +870,7 @@ export default defineComponent({
         '--n-pane-padding-top': getPadding(panePadding, 'top'),
         '--n-pane-padding-bottom': getPadding(panePadding, 'bottom'),
         '--n-font-weight-strong': fontWeightStrong,
-        '--n-tab-color-segment': tabColorSegment,
-        '--n-icon-color-disabled': iconColorDisabled,
-        '--n-nav-button-color-hover': navButtonHoverColor
+        '--n-tab-color-segment': tabColorSegment
       }
     })
 
@@ -896,6 +892,7 @@ export default defineComponent({
       segmentCapsuleElRef,
       tabsPaneWrapperRef,
       tabsElRef,
+      selfElRef,
       barElRef,
       addTabInstRef,
       xScrollInstRef,
@@ -918,8 +915,9 @@ export default defineComponent({
       onRender: themeClassHandle?.onRender,
       startReachedRef,
       endReachedRef,
-      isScroll,
+      isOverflow: isOverflowRef,
       handleButtonClick,
+      mergedTheme: themeRef,
       ...exposedMethods
     }
   },
@@ -937,9 +935,10 @@ export default defineComponent({
       paneWrapperStyle,
       startReachedRef,
       endReachedRef,
-      isScroll,
+      isOverflow,
       showScrollButton,
       handleButtonClick,
+      mergedTheme,
       $slots: { default: defaultSlot, prefix: prefixSlot, suffix: suffixSlot }
     } = this
 
@@ -1053,6 +1052,7 @@ export default defineComponent({
     const resolvedPlacement = isSegment ? 'top' : placement
     return (
       <div
+        ref="selfElRef"
         class={[
           `${mergedClsPrefix}-tabs`,
           this.themeClass,
@@ -1135,7 +1135,7 @@ export default defineComponent({
             </VResizeObserver>
           ) : (
             <>
-              {showScrollButton && isScroll && (
+              {showScrollButton && isOverflow && (
                 <TabsButton
                   mergedClsPrefix={mergedClsPrefix}
                   type="prev"
@@ -1144,6 +1144,8 @@ export default defineComponent({
                     || resolvedPlacement === 'right'
                   }
                   disabled={startReachedRef}
+                  theme={mergedTheme.peers.Button}
+                  themeOverrides={mergedTheme.peerOverrides.Button}
                   onClick={handleButtonClick}
                 />
               )}
@@ -1178,7 +1180,7 @@ export default defineComponent({
                 }}
               </VResizeObserver>
 
-              {showScrollButton && isScroll && (
+              {showScrollButton && isOverflow && (
                 <TabsButton
                   mergedClsPrefix={mergedClsPrefix}
                   type="next"
@@ -1187,6 +1189,8 @@ export default defineComponent({
                     || resolvedPlacement === 'right'
                   }
                   disabled={endReachedRef}
+                  theme={mergedTheme.peers.Button}
+                  themeOverrides={mergedTheme.peerOverrides.Button}
                   onClick={handleButtonClick}
                 />
               )}

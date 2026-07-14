@@ -114,5 +114,5 @@ center-active-tab.vue
 
 | 名称               | 类型         | 说明             | 版本         |
 | ------------------ | ------------ | ---------------- | ------------ |
-| syncBarPosition    | `() => void` | 更新指示条的位置 | 2.24.0       |
 | scrollToCurrentTab | `() => void` | 滚动到当前标签   | NEXT_VERSION |
+| syncBarPosition    | `() => void` | 更新指示条的位置 | 2.24.0       |
