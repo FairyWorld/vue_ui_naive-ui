@@ -608,11 +608,11 @@ export default cB('tabs', `
     ])
   ]),
   cB('tabs-scroll-button', [
-    cM('left', `
+    cM('start', `
       padding-left: 10px;
       padding-right: 6px;
     `),
-    cM('right', `
+    cM('end', `
       padding-right: 10px;
       padding-left: 6px;
     `),

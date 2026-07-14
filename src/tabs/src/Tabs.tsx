@@ -45,6 +45,7 @@ import {
 } from 'vue'
 import { VResizeObserver, VXScroll } from 'vueuc'
 import { useConfig, useTheme, useThemeClass } from '../../_mixins'
+import { useRtl } from '../../_mixins/use-rtl'
 import {
   call,
   createKey,
@@ -88,7 +89,9 @@ export const tabsProps = {
   >,
   size: String as PropType<TabsSize>,
   placement: {
-    type: String as PropType<'top' | 'left' | 'right' | 'bottom'>,
+    type: String as PropType<
+      'top' | 'right' | 'bottom' | 'left' | 'start' | 'end'
+    >,
     default: 'top'
   },
   tabStyle: [String, Object] as PropType<string | CSSProperties>,
@@ -157,8 +160,23 @@ export default defineComponent({
       })
     }
 
-    const { mergedClsPrefixRef, inlineThemeDisabled, mergedComponentPropsRef }
-      = useConfig(props)
+    const {
+      mergedClsPrefixRef,
+      inlineThemeDisabled,
+      mergedComponentPropsRef,
+      mergedRtlRef
+    } = useConfig(props)
+    const rtlEnabledRef = useRtl('Tabs', mergedRtlRef, mergedClsPrefixRef)
+    const mergedPlacementRef = computed(() => {
+      const { placement } = props
+      if (placement === 'start') {
+        return rtlEnabledRef?.value ? 'right' : 'left'
+      }
+      if (placement === 'end') {
+        return rtlEnabledRef?.value ? 'left' : 'right'
+      }
+      return placement
+    })
     const themeRef = useTheme(
       'Tabs',
       '-tabs',
@@ -242,7 +260,8 @@ export default defineComponent({
       const barIsHide = barEl.style.opacity === '0'
       if (tabEl) {
         const disabledClassName = `${mergedClsPrefixRef.value}-tabs-bar--disabled`
-        const { barWidth, placement } = props
+        const { barWidth } = props
+        const placement = mergedPlacementRef.value
         if (tabEl.dataset.disabled === 'true') {
           barEl.classList.add(disabledClassName)
         }
@@ -365,7 +384,7 @@ export default defineComponent({
     }
 
     function updateCurrentScrollPosition(): void {
-      const isHorizontal = ['top', 'bottom'].includes(props.placement)
+      const isHorizontal = ['top', 'bottom'].includes(mergedPlacementRef.value)
       const tabEl = getCurrentEl()
       if (!tabEl)
         return
@@ -493,7 +512,7 @@ export default defineComponent({
     }
 
     function handleButtonClick(type: string): void {
-      if (['top', 'bottom'].includes(props.placement)) {
+      if (['top', 'bottom'].includes(mergedPlacementRef.value)) {
         const { value: xScrollInst } = xScrollInstRef
         if (!xScrollInst)
           return
@@ -604,7 +623,7 @@ export default defineComponent({
         }
       }
       if (type !== 'segment') {
-        const { placement } = props
+        const placement = mergedPlacementRef.value
         deriveScrollShadow(
           (placement === 'top' || placement === 'bottom'
             ? (xScrollInstRef.value?.$el as undefined | HTMLElement)
@@ -621,6 +640,20 @@ export default defineComponent({
         const { type } = props
         if (type === 'line' || type === 'bar') {
           updateBarPositionInstantly()
+        }
+      })
+    })
+
+    watch(mergedPlacementRef, () => {
+      void nextTick(() => {
+        const { type } = props
+        if (type === 'line' || type === 'bar') {
+          updateBarPositionInstantly()
+        }
+        else if (type === 'segment') {
+          updateSegmentPosition({
+            transitionDisabled: true
+          })
         }
       })
     })
@@ -656,7 +689,7 @@ export default defineComponent({
       } = entry
       const containerWidth = target.parentElement!.parentElement!.offsetWidth
       const containerHeight = target.parentElement!.parentElement!.offsetHeight
-      const { placement } = props
+      const placement = mergedPlacementRef.value
       if (!addTabFixedRef.value) {
         if (placement === 'top' || placement === 'bottom') {
           if (containerWidth < width) {
@@ -711,7 +744,7 @@ export default defineComponent({
         return
       // prevent scroll position from being 0
       const SCROLL_POSITION_EPSILON = 1
-      const { placement } = props
+      const placement = mergedPlacementRef.value
       if (placement === 'top' || placement === 'bottom') {
         const { scrollLeft, scrollWidth, offsetWidth } = el
         startReachedRef.value = scrollLeft <= SCROLL_POSITION_EPSILON
@@ -918,6 +951,8 @@ export default defineComponent({
       isOverflow: isOverflowRef,
       handleButtonClick,
       mergedTheme: themeRef,
+      rtlEnabled: rtlEnabledRef,
+      mergedPlacement: mergedPlacementRef,
       ...exposedMethods
     }
   },
@@ -925,7 +960,7 @@ export default defineComponent({
     const {
       mergedClsPrefix,
       type,
-      placement,
+      mergedPlacement: placement,
       addTabFixed,
       addable,
       mergedSize,
@@ -939,6 +974,7 @@ export default defineComponent({
       showScrollButton,
       handleButtonClick,
       mergedTheme,
+      rtlEnabled,
       $slots: { default: defaultSlot, prefix: prefixSlot, suffix: suffixSlot }
     } = this
 
@@ -1059,7 +1095,8 @@ export default defineComponent({
           `${mergedClsPrefix}-tabs--${type}-type`,
           `${mergedClsPrefix}-tabs--${mergedSize}-size`,
           mergedJustifyContent && `${mergedClsPrefix}-tabs--flex`,
-          `${mergedClsPrefix}-tabs--${resolvedPlacement}`
+          `${mergedClsPrefix}-tabs--${resolvedPlacement}`,
+          rtlEnabled && `${mergedClsPrefix}-tabs--rtl`
         ]}
         style={this.cssVars as CSSProperties}
       >
@@ -1144,6 +1181,7 @@ export default defineComponent({
                     || resolvedPlacement === 'right'
                   }
                   disabled={startReachedRef}
+                  rtl={!!rtlEnabled}
                   theme={mergedTheme.peers.Button}
                   themeOverrides={mergedTheme.peerOverrides.Button}
                   onClick={handleButtonClick}
@@ -1179,7 +1217,6 @@ export default defineComponent({
                   )
                 }}
               </VResizeObserver>
-
               {showScrollButton && isOverflow && (
                 <TabsButton
                   mergedClsPrefix={mergedClsPrefix}
@@ -1189,6 +1226,7 @@ export default defineComponent({
                     || resolvedPlacement === 'right'
                   }
                   disabled={endReachedRef}
+                  rtl={!!rtlEnabled}
                   theme={mergedTheme.peers.Button}
                   themeOverrides={mergedTheme.peerOverrides.Button}
                   onClick={handleButtonClick}

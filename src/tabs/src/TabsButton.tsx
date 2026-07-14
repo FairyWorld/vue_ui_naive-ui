@@ -24,6 +24,7 @@ export default defineComponent({
     },
     vertical: Boolean,
     disabled: Boolean,
+    rtl: Boolean,
     theme: Object as PropType<ButtonTheme>,
     themeOverrides: Object as PropType<ExtractThemeOverrides<ButtonTheme>>,
     onClick: Function as PropType<(type: ButtonTypes) => void>
@@ -45,10 +46,14 @@ export default defineComponent({
       disabled,
       type,
       vertical,
+      rtl,
       theme,
       themeOverrides,
       handleClick
     } = this
+
+    const isNext = type === 'next'
+    const showRightIcon = vertical ? isNext : rtl ? !isNext : isNext
 
     return (
       <NButton
@@ -62,10 +67,10 @@ export default defineComponent({
           `${mergedClsPrefix}-tabs-scroll-button`,
           !vertical
           && type === 'prev'
-          && `${mergedClsPrefix}-tabs-scroll-button--left`,
+          && `${mergedClsPrefix}-tabs-scroll-button--start`,
           !vertical
           && type === 'next'
-          && `${mergedClsPrefix}-tabs-scroll-button--right`,
+          && `${mergedClsPrefix}-tabs-scroll-button--end`,
           vertical
           && type === 'prev'
           && `${mergedClsPrefix}-tabs-scroll-button--up`,
@@ -82,7 +87,7 @@ export default defineComponent({
             >
               {{
                 default: () =>
-                  type === 'next' ? <ArrowRightIcon /> : <ArrowLeftIcon />
+                  showRightIcon ? <ArrowRightIcon /> : <ArrowLeftIcon />
               }}
             </NBaseIcon>
           )
